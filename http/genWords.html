@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <script src="words.js"></script>
+    <script src="functions.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var name = localStorage.getItem("username");
+    var socket = io.connect('', {query: 'name='+name});
+    if (name == "Administrator") {
+      createGame()
+    }
+    else {
+      alert("ERROR")
+      throw "ERROR"
+    }
+    </script>
+  </body>
+</html>

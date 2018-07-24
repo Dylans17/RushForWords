@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head profile="http://www.w3.org/2005/10/profile">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#db5945">
+<link rel="icon" href="myicon.ico">
+<title>Rush For Words</title>
+<style>
+::-webkit-scrollbar {
+    width: 0px;
+}
+body,html {
+margin: 0;
+padding: 0px;
+user-select:none;
+}
+header {
+font-size: 7.0vw;
+height: 1.2em;
+width: 98vw;
+background: lightgrey; /* For browsers that do not support gradients */
+background: linear-gradient(to bottom right, #aaffff, #aaaaaa);
+border: .15vw solid black;
+border-radius: 2vw;
+padding: 0px;
+margin: .45vw;
+margin-right: -4px;
+display: inline-block;
+text-align: center;
+vertical-align: top;
+}
+button,input {
+ border-radius: 1vw;
+ border-width: 0px;
+ background: lightgrey; /* For browsers that do not support gradients#e5bf93, #d6994a */
+ background: linear-gradient(to bottom right, #ffbb99, #cc9044);
+ width: auto;
+ height: 10vw;
+ font-size: 9vw;
+ margin: .3vw;
+}
+screen {
+  background: linear-gradient(to right, grey,black,grey);
+  min-height:100vh;
+  margin: 0;
+}
+screen:not(#Screen3) {
+  font-size: 5vw;
+  text-align: center;
+}
+h1 {
+  color:white;
+  margin:0;
+}
+input[type="number"] {
+  border-width: 0px;
+  color: #000000;
+  font-size:5vw;
+}
+li {
+  display:inline-block;
+  font-size: 5vw;
+  width:4.8em;
+  color:white;
+}
+.score {
+float:left;
+display: inline-block;
+height:100%;
+}
+.time {
+float:right;
+display: inline-block;
+height:100%;
+}
+.letter {
+font-size: 7.9vw;
+width:1.2em;
+height: 1.2em;
+background: lightgrey; /* For browsers that do not support gradients#e5bf93, #d6994a */
+background: linear-gradient(to bottom right, #ffbb99, #cc9044);
+border: .02vw solid black;
+border-radius: 2vw;
+box-shadow: 0 .3vw .6vw 0 rgba(0, 0, 0, .8), 0 .4vw 1.5vw 0 rgba(0, 0, 0, 1);
+/*padding: 0px;*/
+
+margin: .45vw;
+margin-right: -4px;
+/*text-align: center;*/
+display: inline-flex;/*table-cell;inline-block;*/
+vertical-align: top;
+line-height: 1.2em;
+align-items: center;/*center;*/
+justify-content: center;
+position:relative;
+}
+.blank {
+  background: white; /* For browsers that do not support gradients */
+  background: linear-gradient(to bottom right, #ffeecc, #eebb77);
+}
+.used {
+  background: yellow; /* For browsers that do not support gradients */
+  background: linear-gradient(to bottom right, #ffffbb, #eeee00);
+}
+.correct {
+  background: green; /* For browsers that do not support gradients */
+  background: linear-gradient(to bottom right, #bbffbb, #00ee00);
+}
+.wrong {
+  background: red; /* For browsers that do not support gradients */
+  background: linear-gradient(to bottom right, #ffbbbb, #ee0000);
+}
+</style>
+</head>
+<body>
+<screen id="Screen0" style="display:block;">
+<h1>Rush For Words</h1>
+<h1 id="HighScore">High Score: 0</h1>
+<button onclick="changescreen(3)">Join Game</button>
+</screen>
+<screen id="Screen1" style="display:none;">
+
+</screen>
+<screen id="Screen2" style="display:none;">
+
+</screen>
+<screen id="Screen3" style="display:none;">
+<header>
+<div class="score">
+Score:<span id="score">0</span>
+</div>
+<div style="color:Green;font-size:6.5vw;display: inline-block;margin:0 auto;" id="connection">Connected</div>
+<div class="time" id="timeSpot">
+Time:<div class="time" id="time">2:00</div>
+</div>
+</header>
+<div style="white-space: nowrap;">
+<div class="letter blank" id="spot0"></div>
+<div class="letter blank" id="spot1"></div>
+<div class="letter blank" id="spot2"></div>
+<div class="letter blank" id="spot3"></div>
+<div class="letter blank" id="spot4"></div>
+<div class="letter blank" id="spot5"></div>
+<div class="letter blank" id="spot6"></div>
+<div class="letter blank" id="spot7"></div>
+<div class="letter blank" id="spot8"></div>
+<div class="letter blank" id="spot9"></div>
+</div>
+<div style="white-space: nowrap;">
+<div class="letter" id="letter0">W</div>
+<div class="letter" id="letter1">A</div>
+<div class="letter" id="letter2">I</div>
+<div class="letter" id="letter3">T</div>
+<div class="letter" id="letter4">I</div>
+<div class="letter" id="letter5">N</div>
+<div class="letter" id="letter6">G</div>
+<div class="letter" id="letter7"></div>
+<div class="letter" id="letter8"></div>
+<div class="letter" id="letter9"></div>
+</div>
+<div id="wordsIfoundList">
+</div>
+</screen>
+<script src="functions.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+"use strict";
+//createGame()
+let pingTimeout = 0;
+let name = localStorage.getItem("username");
+let highScore = localStorage.getItem("High Score") || 0;
+document.getElementById("HighScore").innerHTML = "High Score: " + highScore;
+while (!name ||  name=="null") {
+  localStorage.setItem("username", prompt("What is your name?"));
+  name = localStorage.getItem("username");
+}
+var socket = io.connect('', {query: 'name='+name});
+socket.on('submitWord', function(msg){
+  foundWords.push(msg);
+})
+socket.on('startGame', function(letters,words){
+  givenLetters = letters;
+  validWords = words;
+  startGame();
+})
+socket.on('time', function(time){
+  if(time == 0){
+    gameOver();
+    document.getElementById('time').innerHTML = "2:00"
+  }
+  else {
+    document.getElementById('time').innerHTML = Math.floor(time/60) + ":" + ("0" + (time % 60)).slice(-2);
+  }
+})
+socket.on('delay', function(delay){
+  if (delay == "Cancelled") {
+    populateLetters("WAITING  ➠")
+  }
+  else {
+    populateLetters("12345    ➠".replace("12345 ".substring(delay,6), " ".repeat(6-delay)))
+  }
+})
+socket.on('ding',function() {
+  document.getElementById('connection').style.color = "Green";
+  document.getElementById('connection').innerHTML = "Connected";
+  clearTimeout(pingTimeout)
+  pingTimeout = setTimeout(noPing,5000)
+})
+noPing()
+</script>
+</body>
+</html>

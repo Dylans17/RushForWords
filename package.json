@@ -1,0 +1,16 @@
+{
+  "name": "rushforwords",
+  "version": "1.0.0",
+  "description": "Simple multiplayer word game",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "author": "Dylan Strickley",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "node-persist": "^3.0.1",
+    "socket.io": "^2.1.1"
+  }
+}
