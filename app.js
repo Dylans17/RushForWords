@@ -22,6 +22,7 @@ let gameRunning = false;
 await storage.init()
 givenLettersArray = await storage.getItem('letters')
 validWordsArray = await storage.getItem('words')
+shuffle(givenLettersArray,validWordsArray)
 console.log(givenLettersArray.length,validWordsArray.length);
 })()
 let Time = gameLength
@@ -146,5 +147,27 @@ async function updateStorage () {
     givenLettersArray.splice(minLength);
     validWordsArray.splice(minLength);
     updateStorage();
+  }
+}
+//shuffle function is modified from https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+//this function assumes that you are give 2 equal length arrays and shuffles theme symmetrically
+//I only use this to randomise the order we play games to avoid generating them
+function shuffle(array,array2) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    temporaryValue = array2[currentIndex];
+    array2[currentIndex] = array2[randomIndex];
+    array2[randomIndex] = temporaryValue;
   }
 }
