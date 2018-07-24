@@ -16,6 +16,7 @@ let validWordsArray = [];
 let currentGivenLetters = "";
 let currentValidWords = [];
 let userArray = [];
+let gameRunning = false;
 //global.userArray = userArray;
 (async () => {
 await storage.init()
@@ -79,7 +80,7 @@ io.on('connection', function(socket){
       delay = 5
       startGame()
     }
-    else {
+    else if (!gameRunning){
       clearTimeout(delayTimeout)
       clearTimeout(countdownTimeout)
       console.log("GAME NOT READY");
@@ -92,6 +93,7 @@ function startGame() {
   countdownTimeout = setTimeout(function() {
     io.emit('startGame',currentGivenLetters = givenLettersArray.pop(),currentValidWords = validWordsArray.pop());
     updateStorage();
+    gameRunning = true
     Time = gameLength;
     clearTimeout(countdownTimeout)
     countdown()
@@ -118,6 +120,7 @@ function countdown() {
       userArray[i+1] = 0
       userArray[i+2] = []
       userArray[i+3] = false;
+      gameRunning = false;
     }
   }
 }
