@@ -4,11 +4,10 @@
 
 //call libraries
 const express = require('express');
-const fs = require('fs');
+const createGame = require('./createGame.js');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-let storage = require('node-persist');
 //variables for app
 const gameLength = 30;
 let givenLettersArray = [];
@@ -17,14 +16,6 @@ let currentGivenLetters = "";
 let currentValidWords = [];
 let userArray = [];
 let gameRunning = false;
-//global.userArray = userArray;
-(async () => {
-await storage.init()
-givenLettersArray = await storage.getItem('letters')
-validWordsArray = await storage.getItem('words')
-shuffle(givenLettersArray,validWordsArray)
-console.log(givenLettersArray.length,validWordsArray.length);
-})()
 let Time = gameLength
 let delay = 5
 let delayTimeout = 0
@@ -93,7 +84,6 @@ function startGame() {
   console.log('GAME STARTING');
   countdownTimeout = setTimeout(function() {
     io.emit('startGame',currentGivenLetters = givenLettersArray.pop(),currentValidWords = validWordsArray.pop());
-    updateStorage();
     gameRunning = true
     Time = gameLength;
     clearTimeout(countdownTimeout)
@@ -126,48 +116,23 @@ function countdown() {
   }
 }
 function ding() {
-  setTimeout(ding,2000)
-  io.emit('ding')
+  if (userCount) {
+    setTimeout(ding,2000)
+    io.emit('ding')
+    if (givenLettersArray.length < 100) {
+      let vals = createGame.create()
+      addtoArray(vals[0],vals[1])
+    }
+  }
+  else {
+    let vals = createGame.create()
+    addtoArray(vals[0],vals[1])
+    setTimeout(ding,2000)
+  }
 }
 ding()
 function addtoArray(givenLetters,validWords) {
   givenLettersArray.push(givenLetters)
   validWordsArray.push(validWords)
-  updateStorage()
-}
-async function updateStorage () {
-  if (givenLettersArray.length == validWordsArray.length) {
-    console.log("Array length: "+givenLettersArray.length)
-    await storage.setItem('letters',givenLettersArray)
-    await storage.setItem('words',validWordsArray)
-  }
-  else {
-    console.log("givenLetters and validWords arrays have different lengths")
-    let minLength = Math.min(givenLettersArray.length,validWordsArray.length)
-    givenLettersArray.splice(minLength);
-    validWordsArray.splice(minLength);
-    updateStorage();
-  }
-}
-//shuffle function is modified from https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-//this function assumes that you are give 2 equal length arrays and shuffles theme symmetrically
-//I only use this to randomise the order we play games to avoid generating them
-function shuffle(array,array2) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-    temporaryValue = array2[currentIndex];
-    array2[currentIndex] = array2[randomIndex];
-    array2[randomIndex] = temporaryValue;
-  }
+  console.log(givenLettersArray.length,validWordsArray.length)
 }
