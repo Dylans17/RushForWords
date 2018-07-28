@@ -53,9 +53,6 @@ io.on('connection', function(socket){
     socket.broadcast.emit('submitWord', msg);
     Time += Math.round(msg.length - (timeDec+=.1));
   });
-  socket.on('wordsGenerated',function(givenLetters,validWords){
-    addtoArray(givenLetters,validWords);
-  });
   socket.on('sendReady',function(ready){
     console.log(socket.handshake.query.name+': '+ !!ready);
     let index = userArray.indexOf(socket.handshake.query.name);

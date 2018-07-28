@@ -8,32 +8,7 @@ let activeLetters = "";
 let activeLettersIndex = '';
 let score = 0;
 let ready = false;
-function createGame() {
-    createLetters();
-    detectWords();
-    if (validWords.length > 100 && validWords[validWords.length-1].length >= 8){
-        sort(validWords);
-        givenLetters = mixLetters(givenLetters);
-        console.log(++score)
-        socket.emit('wordsGenerated',givenLetters,validWords);
-    }
-    requestAnimationFrame(createGame);
-    return;
-}
-function createLetters() {
-  givenLetters = ""
-  const vowelCount = Math.round(Math.random()*3)+2
-  for (let i = 0;i < 10-vowelCount;i++) {
-    let a = Math.round(Math.random() * Math.random() * 19)
-      givenLetters += consonants[a];
-  }
-  for (let i = 0;i < vowelCount;i++) {
-    let a = Math.round(Math.random() * 4.7)
-    //if (givenLetters.indexOf(vowels[a]) == -1)
-      givenLetters += vowels[a];
-    //else i--;
-  }
-}
+let multiplayer = true;
 function startGame() {
   foundWords = [];
   wordsIfound = [];
