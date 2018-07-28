@@ -9,14 +9,16 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 //variables for app
-const gameLength = 30;
+const gameLength = 45;
+const gameLengthDec = 1;
 let givenLettersArray = [];
 let validWordsArray = [];
 let currentGivenLetters = "";
 let currentValidWords = [];
 let userArray = [];
 let gameRunning = false;
-let Time = gameLength
+let Time = gameLength;
+let timeDec = gameLengthDec;
 let delay = 5
 let delayTimeout = 0
 let countdownTimeout = 0
@@ -49,7 +51,7 @@ io.on('connection', function(socket){
       console.log(";Tried to get ID of non-existent user",userArray,socket.handshake.query.name);
     }
     socket.broadcast.emit('submitWord', msg);
-    Time += msg.length - 2;
+    Time += Math.round(msg.length - (timeDec+=.1));
   });
   socket.on('wordsGenerated',function(givenLetters,validWords){
     addtoArray(givenLetters,validWords);
@@ -86,6 +88,7 @@ function startGame() {
     io.emit('startGame',currentGivenLetters = givenLettersArray.pop(),currentValidWords = validWordsArray.pop());
     gameRunning = true
     Time = gameLength;
+    timeDec = gameLengthDec;
     clearTimeout(countdownTimeout)
     countdown()
   },5000)
