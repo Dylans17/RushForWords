@@ -91,6 +91,9 @@ io.on('connection', function(socket){
       rooms[userRoom].users.push(userName,0,[],false)
       rooms[userRoom].allReady = false;
       console.log(rooms)
+      if (rooms[userRoom].gameRunning) {
+        socket.emit('startGame',rooms[room].givenLetters,rooms[room].validWords);
+      }
     }
   })
   socket.on('leaveRooms',function(){
@@ -121,7 +124,7 @@ io.on('connection', function(socket){
       rooms[userRoom].allReady = rooms[userRoom].allReady && rooms[userRoom].users[i+3]
     }
     console.log("All Ready :" + rooms[userRoom].allReady)
-    if (rooms[userRoom].allReady) {
+    if (rooms[userRoom].allReady && !rooms[userRoom].gameRunning) {
       rooms[userRoom].delay = 5
       console.log('GAME STARTING IN ROOM '+userRoom);
       rooms[userRoom].gameRunning = true;
