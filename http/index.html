@@ -37,7 +37,11 @@ button,input {
  width: auto;
  height: 10vw;
  font-size: 9vw;
+ color: #000000;
  margin: .3vw;
+}
+button:empty {
+  display:none;
 }
 screen {
   background: linear-gradient(to right, grey,black,grey);
@@ -47,15 +51,15 @@ screen {
 screen:not(#Screen3) {
   font-size: 5vw;
   text-align: center;
+  color:white;
 }
 h1 {
-  color:white;
   margin:0;
 }
-input[type="number"] {
+input[type="text"] {
   border-width: 0px;
-  color: #000000;
   font-size:5vw;
+  text-align: center;
 }
 li {
   display:inline-block;
@@ -115,15 +119,19 @@ position:relative;
 <body>
 <screen id="Screen0" style="display:block;">
 <h1>Rush For Words</h1>
-<h1 id="HighScore">High Score: 0</h1>
-<button onclick="changescreen(3);multiplayer = true">Join Game</button>
-<button onclick="changescreen(3);multiplayer = false">Single Player Game</button>
+<button onclick="changescreen(1);multiplayer = false">Singleplayer</button><br />
+<button onclick="changescreen(2);multiplayer = true">Multiplayer</button>
 </screen>
 <screen id="Screen1" style="display:none;">
-
+<h1>Single Player</h1>
+<h1 id="HighScore">High Score: 0</h1>
+<button onclick="changescreen(3);">Play Game</button><br />
 </screen>
 <screen id="Screen2" style="display:none;">
-
+<h1>Multi Player</h1>
+Name:<input type='text' id='name'></input><br />
+Room:<input type='text' onchange="checkId(this)" value=''></input><br />
+<button id="roomBtn" onclick="joinRoom()"></button>
 </screen>
 <screen id="Screen3" style="display:none;">
 <header>
@@ -148,13 +156,13 @@ Time:<div class="time" id="time">2:00</div>
 <div class="letter blank" id="spot9"></div>
 </div>
 <div style="white-space: nowrap;">
-<div class="letter" id="letter0">W</div>
-<div class="letter" id="letter1">A</div>
-<div class="letter" id="letter2">I</div>
-<div class="letter" id="letter3">T</div>
-<div class="letter" id="letter4">I</div>
-<div class="letter" id="letter5">N</div>
-<div class="letter" id="letter6">G</div>
+<div class="letter" id="letter0"></div>
+<div class="letter" id="letter1"></div>
+<div class="letter" id="letter2"></div>
+<div class="letter" id="letter3"></div>
+<div class="letter" id="letter4"></div>
+<div class="letter" id="letter5"></div>
+<div class="letter" id="letter6"></div>
 <div class="letter" id="letter7"></div>
 <div class="letter" id="letter8"></div>
 <div class="letter" id="letter9"></div>
@@ -168,14 +176,12 @@ Time:<div class="time" id="time">2:00</div>
 "use strict";
 //createGame()
 let pingTimeout = 0;
-let name = localStorage.getItem("username");
+const nodeIP = ''
+let name = localStorage.getItem("username") || ''
 let highScore = localStorage.getItem("High Score") || 0;
 document.getElementById("HighScore").innerHTML = "High Score: " + highScore;
-while (!name ||  name=="null") {
-  localStorage.setItem("username", prompt("What is your name?"));
-  name = localStorage.getItem("username");
-}
-var socket = io.connect('', {query: 'name='+name});
+document.getElementById("name").value = name;
+var socket = io.connect(nodeIP);
 socket.on('submitWord', function(msg){
   foundWords.push(msg);
 })
@@ -187,7 +193,7 @@ socket.on('startGame', function(letters,words){
 socket.on('time', function(time){
   if(time == 0){
     gameOver();
-    document.getElementById('time').innerHTML = "2:00"
+    document.getElementById('time').innerHTML = "0:45"
   }
   else {
     document.getElementById('time').innerHTML = Math.floor(time/60) + ":" + ("0" + (time % 60)).slice(-2);
@@ -195,17 +201,24 @@ socket.on('time', function(time){
 })
 socket.on('delay', function(delay){
   if (delay == "Cancelled") {
-    populateLetters("WAITING  ➠")
+    populateLetters("WAITING")
+    endGameButtons(true)
   }
   else {
-    populateLetters("12345    ➠".replace("12345 ".substring(delay,6), " ".repeat(6-delay)))
+    populateLetters("12345".substr(0,delay))
+    endGameButtons(true)
   }
 })
-socket.on('ding',function() {
+socket.on('pong',function() {
   document.getElementById('connection').style.color = "Green";
   document.getElementById('connection').innerHTML = "Connected";
   clearTimeout(pingTimeout)
   pingTimeout = setTimeout(noPing,5000)
+})
+socket.on('disconnect',function(){
+  noPing();
+  homeScreen();
+  alert('You have disconnected')
 })
 noPing()
 </script>

@@ -1,4 +1,5 @@
 "use strict";
+//navigator.onLine
 let validWords = [];
 let foundWords = [];
 let wordsIfound = [];
@@ -9,6 +10,7 @@ let activeLettersIndex = '';
 let score = 0;
 let ready = false;
 let multiplayer = true;
+let room = "";
 function startGame() {
   foundWords = [];
   wordsIfound = [];
@@ -16,11 +18,10 @@ function startGame() {
   activeLetters = "";
   activeLettersIndex = "";
   score = 0;
-  document.getElementById("spot" + 9).className = "letter blank";
-  document.getElementById('score').innerHTML = score
-  document.getElementById("wordsIfoundList").innerHTML = ""
+  document.getElementById('score').innerHTML = score;
+  document.getElementById("wordsIfoundList").innerHTML = "";
   populateLetters(" ");
-  document.getElementById("spot" + 9).removeEventListener("click", toggleReady);
+  endGameButtons(false);
   addClickEvents();
 }
 function detectWords() {
@@ -124,8 +125,8 @@ function submitWord(e,char) {
 }
 function gameOver() {
   changeClass("blank")
-  populateLetters("GAME OVER➠")
-  if (score > highScore) {
+  populateLetters("GAMEOVER")
+  if (score > highScore && multiplayer == false) {
     localStorage.setItem("High Score",score)
   }
   for (let i = 0;i<10;i++) {
@@ -133,8 +134,7 @@ function gameOver() {
     document.getElementById("spot" + i).removeEventListener("click", submitWord);
   }
   ready = false;
-  document.getElementById("spot" + 9).className = "letter wrong";
-  document.getElementById("spot" + 9).addEventListener("click", toggleReady);
+  endGameButtons(true)
   sort(wordsIfound);
   for (let i = 0;i<wordsIfound.length;i++) {
     document.getElementById("wordsIfoundList").innerHTML += "<li>" + wordsIfound[i] + "</li>"
@@ -155,13 +155,61 @@ function changescreen(screen) {
   document.getElementById("Screen2").style.display = (screen==2 ? 'block' : 'none');
   document.getElementById("Screen3").style.display = (screen==3 ? 'block' : 'none');
   if (screen == 3 && givenLetters == "") {
-    ready = false;
-    document.getElementById("spot" + 9).className = "letter wrong";
-    document.getElementById("spot" + 9).innerHTML = "➠";
-    document.getElementById("spot" + 9).addEventListener("click", toggleReady);
+    populateLetters("READY")
+    endGameButtons(true)
   }
 }
-document.body.addEventListener("keydown", test);
-function test(e) {
-  //console.log(e.key)
+function endGameButtons(enable) {
+  if (enable) {
+    document.getElementById("spot9").className = "letter " + (ready ? 'correct' : 'wrong');
+    document.getElementById("spot9").addEventListener("click", toggleReady);
+    document.getElementById("spot8").addEventListener("click", homeScreen);
+    document.getElementById("spot8").innerText = "🏠"
+    document.getElementById("spot9").innerText = "➠"
+    document.getElementById("spot8").className = "letter used";
+  }
+  else {
+    document.getElementById("spot8").className = "letter blank";
+    document.getElementById("spot9").className = "letter blank";
+    document.getElementById("spot9").removeEventListener("click", toggleReady);
+    document.getElementById("spot8").removeEventListener("click", homeScreen);
+  }
 }
+function homeScreen() {
+  gameOver()
+  socket.emit('leaveRooms')
+  changescreen(0)
+}
+function checkId(src) {
+  name = document.getElementById("name").value.replace(/[^A-Z a-z]/g, '');
+  document.getElementById("name").value = name;
+  room = src.value.toUpperCase().replace(/[^A-Z ]/g, '').trim();
+  src.value = room
+  if(room && name) {
+    socket.emit('getRoomState',room,name,function(response){
+      document.getElementById('roomBtn').innerHTML = (response?'Join Room':'Create Room')
+    })
+  }
+  else {
+    document.getElementById('roomBtn').innerHTML = ""
+  }
+}
+function joinRoom() {
+  name = document.getElementById("name").value.replace(/[^A-Z a-z]/g, '').trim();
+  document.getElementById("name").value = name;
+  localStorage.setItem("username",name);
+  socket.emit('joinRoom',room,name,function (error){alert(error);changescreen(2)})
+  changescreen(3);
+}
+/* For Phone app
+screen.orientation.lock('landscape');
+document.addEventListener("backbutton", onBackKeyDown);
+function onBackKeyDown() {
+  if (document.getElementById("Screen0").style.display == "none")
+  homeScreen()
+  else {
+    navigator.app.exitApp();
+    screen.orientation.unlock();
+  }
+}
+*/

@@ -1,2 +1,3 @@
 # RushForWords
-A multiplayer word game.
+A Node JS multiplayer word game.
+This application primarily uses socket.io.
