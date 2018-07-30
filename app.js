@@ -9,8 +9,8 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http,{pingInterval:3000});
 //variables for app
-const gameLength = 45;
-const gameLengthDec = 1;
+const gameLength = 15;
+const gameLengthDec = 0;
 const gameLengthDecAcc = .1;
 let givenLettersArray = [];
 let validWordsArray = [];
@@ -82,7 +82,7 @@ io.on('connection', function(socket){
       rooms[userRoom].validWords = [];
       rooms[userRoom].givenLetters = [];
       rooms[userRoom].time = gameLength;
-      rooms[userRoom].timeDec = 1;
+      rooms[userRoom].timeDec = gameLengthDec;
       rooms[userRoom].delay = 0;
       rooms[userRoom].allReady = false;
       console.log(rooms)
@@ -91,8 +91,9 @@ io.on('connection', function(socket){
       rooms[userRoom].users.push(userName,0,[],false)
       rooms[userRoom].allReady = false;
       console.log(rooms)
-      if (rooms[userRoom].gameRunning) {
+      if (rooms[userRoom].gameRunning && rooms[userRoom].time < gameLength) {
         socket.emit('startGame',rooms[room].givenLetters,rooms[room].validWords);
+        console.log(userName+' joined '+userRoom+' late.')
       }
     }
   })
@@ -127,7 +128,7 @@ io.on('connection', function(socket){
     if (rooms[userRoom].allReady && !rooms[userRoom].gameRunning) {
       rooms[userRoom].delay = 5
       console.log('GAME STARTING IN ROOM '+userRoom);
-      rooms[userRoom].gameRunning = true;
+      rooms[userRoom].gameRunning = false;
     }
   });
 });
@@ -143,13 +144,15 @@ function gameClock() {
       rooms[room].gameRunning = false;
       rooms[room].delay = 0;
     }
-   if (rooms[room].delay > 0 && rooms[room].gameRunning) {
+   if (rooms[room].delay > 0 && !rooms[room].gameRunning && rooms[room].allReady) {
       io.in(room).emit('delay',rooms[room].delay--);
     }
-    else if (rooms[room].delay == 0 && rooms[room].gameRunning && rooms[room].time == gameLength) {
+    else if (rooms[room].delay == 0 && !rooms[room].gameRunning && rooms[room].allReady) {
+      console.log('Game Start')
       io.in(room).emit('startGame',rooms[room].givenLetters = givenLettersArray.pop(),rooms[room].validWords = validWordsArray.pop());
       rooms[room].time = gameLength - 1;
       rooms[room].timeDec = gameLengthDec;
+      rooms[room].gameRunning = true;
     }
     else if (rooms[room].time > 0 && rooms[room].gameRunning) {
       io.in(room).emit('time',rooms[room].time--);

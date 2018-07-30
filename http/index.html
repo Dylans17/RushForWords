@@ -62,6 +62,26 @@ input[type="text"] {
   font-size:5vw;
   text-align: center;
 }
+#disconnectMsg,#userNotMsg{
+  background: #cc2222;
+  position: absolute;
+  font-size: 1vw;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  line-height: 2.5;
+  overflow: hidden;
+  box-shadow: 0 0 .2vw black;
+  -webkit-transform: translateY(-2.5vw);
+}
+.msgEnter {
+  -webkit-animation: slideDown 7s 0.4s 1 ease forwards;
+}
+@-webkit-keyframes slideDown {
+  0%, 100% { -webkit-transform: translateY(-2.5vw); }
+  3%, 97% { -webkit-transform: translateY(0px); }
+}
 li {
   display:inline-block;
   font-size: 5vw;
@@ -119,6 +139,7 @@ position:relative;
 </head>
 <body>
 <screen id="Screen0" style="display:block;">
+<div id="disconnectMsg">You have disconnected!</div>
 <h1>Rush For Words</h1>
 <button onclick="changescreen(1);multiplayer = false">Singleplayer</button><br />
 <button onclick="changescreen(2);multiplayer = true">Multiplayer</button>
@@ -129,6 +150,7 @@ position:relative;
 <button onclick="changescreen(3);">Play Game</button><br />
 </screen>
 <screen id="Screen2" style="display:none;">
+<div id="userNotMsg">Someone else in that room already has your name.</div>
 <h1>Multi Player</h1>
 Name:<input type='text' id='name'></input><br />
 Room:<input type='text' onchange="checkId(this)" value=''></input><br />
@@ -190,6 +212,7 @@ socket.on('startGame', function(letters,words){
   givenLetters = letters;
   validWords = words;
   startGame();
+  console.log('start')
 })
 socket.on('time', function(time){
   if(time == 0){
@@ -216,12 +239,17 @@ socket.on('pong',function() {
   clearTimeout(pingTimeout)
   pingTimeout = setTimeout(noPing,5000)
 })
-socket.on('disconnect',function(){
-  noPing();
-  homeScreen();
-  alert('You have disconnected')
-})
 noPing()
+socket.on('disconnect',function(){
+  homeScreen();
+  document.getElementById('disconnectMsg').className = "msgEnter"
+  document.getElementById('roomBtn').innerHTML = '';
+  noPing();
+})
+document.getElementById('disconnectMsg').addEventListener("webkitAnimationEnd", function(){
+document.getElementById('disconnectMsg').className = ""});
+document.getElementById('userNotMsg').addEventListener("webkitAnimationEnd", function(){
+document.getElementById('userNotMsg').className = ""});
 </script>
 </body>
 </html>

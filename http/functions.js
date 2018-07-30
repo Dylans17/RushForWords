@@ -177,6 +177,7 @@ function endGameButtons(enable) {
 }
 function homeScreen() {
   gameOver()
+  socket.emit('sendReady',true)
   socket.emit('leaveRooms')
   changescreen(0)
 }
@@ -198,18 +199,6 @@ function joinRoom() {
   name = document.getElementById("name").value.replace(/[^A-Z a-z]/g, '').trim();
   document.getElementById("name").value = name;
   localStorage.setItem("username",name);
-  socket.emit('joinRoom',room,name,function (error){alert(error);changescreen(2)})
+  socket.emit('joinRoom',room,name,function (error){document.getElementById('userNotMsg').className = "msgEnter";changescreen(2)})
   changescreen(3);
 }
-/* For Phone app
-screen.orientation.lock('landscape');
-document.addEventListener("backbutton", onBackKeyDown);
-function onBackKeyDown() {
-  if (document.getElementById("Screen0").style.display == "none")
-  homeScreen()
-  else {
-    navigator.app.exitApp();
-    screen.orientation.unlock();
-  }
-}
-*/

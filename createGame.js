@@ -1,17 +1,19 @@
-let validWords = [];
-let givenLetters = "";
+let validWords;
+let givenLetters;
 function createGame() {
-    while (validWords.length < 100 || validWords[validWords.length-1].length < 8) {
-      createLetters();
-      detectWords();
-    }
-    if (validWords.length > 100 && validWords[validWords.length-1].length >= 8) {
-      sort(validWords);
-      givenLetters = mixLetters(givenLetters);
-      return [givenLetters,validWords]
-    }
-    else
-    console.log("ERROR in createGame.js conditional failed")
+  validWords = [];
+  givenLetters = "";
+  while (validWords.length < 100 || validWords[validWords.length-1].length < 8) {
+    createLetters();
+    detectWords();
+  }
+  if (validWords.length > 100 && validWords[validWords.length-1].length >= 8) {
+    sort(validWords);
+    givenLetters = mixLetters(givenLetters);
+    return [givenLetters,validWords]
+  }
+  else
+  console.log("ERROR in createGame.js conditional failed")
 }
 function createLetters() {
   givenLetters = ""
