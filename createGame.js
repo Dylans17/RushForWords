@@ -5,7 +5,7 @@ function createGame(callBack) {
     givenLetters = createLetters();
     validWords = detectWords(givenLetters);
   }
-  if (validWords.length > 200 && validWords[validWords.length-1].length >= 8) {
+  if (validWords.length >= 200 && validWords[validWords.length-1].length >= 8) {
     sort(validWords);
     givenLetters = mixLetters(givenLetters);
     callBack(givenLetters,validWords)
