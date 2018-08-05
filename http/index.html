@@ -142,18 +142,18 @@ position:relative;
 <div id="disconnectMsg">You have disconnected!</div>
 <h1>Rush For Words</h1>
 <button onclick="changescreen(1);multiplayer = false">Singleplayer</button><br />
-<button onclick="changescreen(2);multiplayer = true">Multiplayer</button>
+<button id='multiplayerButton' onclick="changescreen(2);multiplayer = true" style='display:none;'>Multiplayer</button>
 </screen>
 <screen id="Screen1" style="display:none;">
 <h1>Single Player</h1>
 <h1 id="HighScore">High Score: 0</h1>
-<button onclick="changescreen(3);">Play Game</button><br />
+<button onclick="changescreen(0);">Not Working</button><br />
 </screen>
 <screen id="Screen2" style="display:none;">
 <div id="userNotMsg">Someone else in that room already has your name.</div>
 <h1>Multi Player</h1>
 Name:<input type='text' id='name'></input><br />
-Room:<input type='text' onchange="checkId(this)" value=''></input><br />
+Room:<input type='text' id='room' onchange="checkId(this)" value=''></input><br />
 <button id="roomBtn" onclick="joinRoom()"></button>
 </screen>
 <screen id="Screen3" style="display:none;">
@@ -199,12 +199,11 @@ Time:<div class="time" id="time">2:00</div>
 "use strict";
 //createGame()
 let pingTimeout = 0;
-const nodeIP = ''
 let name = localStorage.getItem("username") || ''
 let highScore = localStorage.getItem("High Score") || 0;
 document.getElementById("HighScore").innerHTML = "High Score: " + highScore;
 document.getElementById("name").value = name;
-var socket = io.connect(nodeIP);
+var socket = io.connect('');
 socket.on('submitWord', function(msg){
   foundWords.push(msg);
 })
@@ -240,9 +239,14 @@ socket.on('pong',function() {
   pingTimeout = setTimeout(noPing,5000)
 })
 noPing()
+socket.on('connect',function(){
+  document.getElementById('multiplayerButton').style.display = "initial";
+  checkId(document.getElementById('room'))
+})
 socket.on('disconnect',function(){
   homeScreen();
-  document.getElementById('disconnectMsg').className = "msgEnter"
+  document.getElementById('disconnectMsg').className = "msgEnter";
+  document.getElementById('multiplayerButton').style.display = "none";
   document.getElementById('roomBtn').innerHTML = '';
   noPing();
 })
