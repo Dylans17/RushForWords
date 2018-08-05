@@ -5,14 +5,16 @@ const createGame = require('./createGame.js');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http,{pingInterval:3000});
-//variables for app
+//Paramenters for App
 const gameLength = 15;
 const gameLengthDec = 0;
 const gameLengthDecAcc = 0.1;
+//App Global Variables
 let givenLettersArray = [];
 let validWordsArray = [];
 let userCount = 0;
 let rooms = {};
+let genReady = true;
 app.get('/',function(req, res){
   res.sendFile(__dirname + '/http/index.html');
 });
@@ -170,13 +172,20 @@ function gameClock() {
   }
 }
 function genGames() {
-  if (userCount == 0)
-    createGame.create(addtoArray); //if everyone is offline, generate games
-  else if (givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10))
-    createGame.quick(addtoArray); //We need more games than rooms and extras just in case
+  if (genReady) {
+    if (userCount == 0) {
+      genReady = false
+      createGame.create(addtoArray); //if everyone is offline, generate games
+    }
+    else if (givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10)) {
+      genReady = false
+      createGame.quick(addtoArray); //We need more games than rooms and extras just in case
+    }
+  }
 }
 function addtoArray(givenLetters,validWords) {
   givenLettersArray.push(givenLetters);
   validWordsArray.push(validWords);
   console.log(givenLettersArray.length,validWordsArray.length);
+  genReady = true
 }
