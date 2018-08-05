@@ -1,7 +1,4 @@
 "use strict";
-//netsh wlan start hostednetwork
-//starts a local network that should share on 192.168.137.1
-
 //call libraries
 const express = require('express');
 const createGame = require('./createGame.js');
@@ -22,6 +19,8 @@ app.get('/',function(req, res){
 app.use(express.static('http',{index:false,extensions:['html']}));
 http.listen(8080,function(){
   console.log('Server started on port ' + 8080)
+  setInterval(gameClock,1000)//start main loop once server has started
+  setInterval(genGames,6000)//start making games once server has started
 })
 io.on('connection', function(socket){
   let userRoom = ''
@@ -133,12 +132,10 @@ io.on('connection', function(socket){
   });
 });
 function gameClock() {
-  if (givenLettersArray.length < 100 || userCount==0) {
-    let vals = createGame.create()
-    addtoArray(vals[0],vals[1])
-  }
+  if (!givenLettersArray) return//no point of working if there is no games to play. Also prevents a
+                                // theoretical bug of sending nothing on game start if there is no games.
   for (let room in rooms) {
-    if (rooms[room].gameRunning && !rooms[room].allReady && rooms[room].time == gameLength) {
+    if (!rooms[room].gameRunning && !rooms[room].allReady && rooms[room].delay > 0) {
       console.log("GAME NOT READY IN ROOM "+room);
       io.in(room).emit('delay',"Cancelled");
       rooms[room].gameRunning = false;
@@ -172,7 +169,12 @@ function gameClock() {
     }
   }
 }
-setInterval(gameClock,1000)
+function genGames() {
+  if (userCount == 0)
+    createGame.create(addtoArray) //if everyone is offline, generate games
+  else if (givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10))
+    createGame.quick(addtoArray) //We need more games than rooms and extras just in case
+}
 function addtoArray(givenLetters,validWords) {
   givenLettersArray.push(givenLetters)
   validWordsArray.push(validWords)

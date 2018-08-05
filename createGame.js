@@ -1,43 +1,60 @@
-let validWords;
-let givenLetters;
-function createGame() {
-  validWords = [];
-  givenLetters = "";
-  while (validWords.length < 100 || validWords[validWords.length-1].length < 8) {
-    createLetters();
-    detectWords();
+function createGame(callBack) {
+  let validWords = [];
+  let givenLetters = "";
+  while (validWords.length < 200 || validWords[validWords.length-1].length < 8) {
+    givenLetters = createLetters();
+    validWords = detectWords(givenLetters);
   }
-  if (validWords.length > 100 && validWords[validWords.length-1].length >= 8) {
+  if (validWords.length > 200 && validWords[validWords.length-1].length >= 8) {
     sort(validWords);
     givenLetters = mixLetters(givenLetters);
-    return [givenLetters,validWords]
+    callBack(givenLetters,validWords)
+    return;
   }
   else
   console.log("ERROR in createGame.js conditional failed")
 }
+function quickGame(callBack) {
+  let validWords = [];
+  let givenLetters = "";
+  while (validWords.length < 100 || validWords[validWords.length-1].length < 7) {
+    givenLetters = createLetters();
+    validWords = detectWords(givenLetters);
+  }
+  if (validWords.length > 100 && validWords[validWords.length-1].length >= 7) {
+    sort(validWords);
+    givenLetters = mixLetters(givenLetters);
+    callBack(givenLetters,validWords)
+    return;
+  }
+  else
+  console.log("ERROR in createGame.js quick conditional failed")
+}
 function createLetters() {
-  givenLetters = ""
+  let lettersCreated = ""
   const vowelCount = Math.round(Math.random()*3)+2
   for (let i = 0;i < 10-vowelCount;i++) {
     let a = Math.round(Math.random() * Math.random() * 19)
-      givenLetters += consonants[a];
+      lettersCreated += consonants[a];
   }
   for (let i = 0;i < vowelCount;i++) {
     let a = Math.round(Math.random() * 4.7)
-      givenLetters += vowels[a];
+      lettersCreated += vowels[a];
   }
+  return lettersCreated
 }
-function detectWords() {
-    validWords = [];
+function detectWords(inputStr) {
+    let wordsDetected = [];
     for (let i = 0;i<wordList.length;i++) {
-        let letterList = givenLetters
+        let letterList = inputStr
         for (let p = 0;p <= wordList[i].length;p++) {
-            if (p == wordList[i].length) validWords.push(wordList[i]);
+            if (p == wordList[i].length) wordsDetected.push(wordList[i]);
             let newList = letterList.replace(wordList[i].charAt(p),"");
             if (letterList == newList)break;
             letterList = newList
         }
     }
+    return wordsDetected;
 }
 function sort(array) {
     array.sort(function(a, b) {
@@ -50,7 +67,7 @@ function mixLetters(inputStr) {
     }).join('')
 }
 exports.create = createGame
-
+exports.quick = quickGame
 
 
 
