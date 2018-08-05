@@ -172,15 +172,9 @@ function gameClock() {
   }
 }
 function genGames() {
-  if (genReady) {
-    if (userCount == 0) {
+  if (genReady && (userCount == 0 || givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10))) {
       genReady = false
-      createGame.create(addtoArray); //if everyone is offline, generate games
-    }
-    else if (givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10)) {
-      genReady = false
-      createGame.quick(addtoArray); //We need more games than rooms and extras just in case
-    }
+      createGame.quick(addtoArray); //generate games
   }
 }
 function addtoArray(givenLetters,validWords) {
