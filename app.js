@@ -8,7 +8,7 @@ const io = require('socket.io')(http,{pingInterval:3000});
 //variables for app
 const gameLength = 15;
 const gameLengthDec = 0;
-const gameLengthDecAcc = .1;
+const gameLengthDecAcc = 0.1;
 let givenLettersArray = [];
 let validWordsArray = [];
 let userCount = 0;
@@ -18,21 +18,21 @@ app.get('/',function(req, res){
 });
 app.use(express.static('http',{index:false,extensions:['html']}));
 http.listen(8080,function(){
-  console.log('Server started on port ' + 8080)
-  setInterval(gameClock,1000)//start main loop once server has started
-  setInterval(genGames,6000)//start making games once server has started
-})
+  console.log('Server started on port ' + 8080);
+  setInterval(gameClock,1000);//start main loop once server has started
+  setInterval(genGames,6000);//start making games once server has started
+});
 io.on('connection', function(socket){
-  let userRoom = ''
-  let userName = ''
-  console.log('A user connected User Count:'+ ++userCount);
+  let userRoom = '';
+  let userName = '';
+  console.log('A user connected User Count:'+ (++userCount));
   socket.on('disconnect', function(){
     if (userRoom) {
       let index = rooms[userRoom].users.indexOf(userName);
       if (index > -1) {
         rooms[userRoom].users.splice(index, 4);
         if (rooms[userRoom].users.length == 0)
-        delete rooms[userRoom]
+          delete rooms[userRoom];
       }
     }
     console.log((userName||'A user') + ' disconnected User Count:'+ --userCount);
@@ -53,8 +53,8 @@ io.on('connection', function(socket){
   });
   socket.on('getRoomState',function(room,name,response){
     room = room.toUpperCase().replace(/[^A-Z ]/g, '');
-    response(!!rooms[room])
-  })
+    response(!!rooms[room]);
+  });
   socket.on('joinRoom',function(room,name,error){
     room = room.toUpperCase().replace(/[^A-Z ]/g, '').trim();
     name = name.replace(/[^A-Z a-z]/g, '').trim();
@@ -64,7 +64,7 @@ io.on('connection', function(socket){
       if (index > -1) {
         rooms[userRoom].users.splice(index, 4);
         if (rooms[userRoom].users.length == 0)
-        delete rooms[userRoom]
+        delete rooms[userRoom];
       }
     }
     if (typeof rooms[room] == 'object'&&rooms[room].users.indexOf(name)>-1) {
@@ -73,7 +73,7 @@ io.on('connection', function(socket){
     }
     userRoom = room;
     userName = name;
-    socket.join(room)
+    socket.join(room);
     if (!rooms[room]) {
       rooms[userRoom] = {};
       rooms[userRoom].users = [userName,0,[],false]; //Name,Score,Words Found,Is Ready
@@ -84,18 +84,18 @@ io.on('connection', function(socket){
       rooms[userRoom].timeDec = gameLengthDec;
       rooms[userRoom].delay = 0;
       rooms[userRoom].allReady = false;
-      console.log(rooms)
+      console.log(rooms);
     }
     else {
-      rooms[userRoom].users.push(userName,0,[],false)
+      rooms[userRoom].users.push(userName,0,[],false);
       rooms[userRoom].allReady = false;
-      console.log(rooms)
+      console.log(rooms);
       if (rooms[userRoom].gameRunning && rooms[userRoom].time < gameLength) {
         socket.emit('startGame',rooms[room].givenLetters,rooms[room].validWords);
-        console.log(userName+' joined '+userRoom+' late.')
+        console.log(userName+' joined '+userRoom+' late.');
       }
     }
-  })
+  });
   socket.on('leaveRooms',function(){
     if (userRoom) {
       socket.leave(userRoom);
@@ -103,12 +103,12 @@ io.on('connection', function(socket){
       if (index > -1) {
         rooms[userRoom].users.splice(index, 4);
         if (rooms[userRoom].users.length == 0)
-        delete rooms[userRoom]
+        delete rooms[userRoom];
       }
     }
     userRoom = '';
     userName = '';
-  })
+  });
   socket.on('sendReady',function(ready){
     if (!userName || !userRoom) return;
     console.log(userName+': '+ !!ready);
@@ -119,20 +119,20 @@ io.on('connection', function(socket){
     else {
       console.log(";Tried to get ID of non-existent user",userName);
     }
-    rooms[userRoom].allReady = true
+    rooms[userRoom].allReady = true;
     for (let i = 0;i<rooms[userRoom].users.length;i+=4) {
-      rooms[userRoom].allReady = rooms[userRoom].allReady && rooms[userRoom].users[i+3]
+      rooms[userRoom].allReady = rooms[userRoom].allReady && rooms[userRoom].users[i+3];
     }
-    console.log("All Ready :" + rooms[userRoom].allReady)
+    console.log("All Ready :" + rooms[userRoom].allReady);
     if (rooms[userRoom].allReady && !rooms[userRoom].gameRunning) {
-      rooms[userRoom].delay = 5
+      rooms[userRoom].delay = 5;
       console.log('GAME STARTING IN ROOM '+userRoom);
       rooms[userRoom].gameRunning = false;
     }
   });
 });
 function gameClock() {
-  if (!givenLettersArray) return//no point of working if there is no games to play. Also prevents a
+  if (!givenLettersArray) return;//no point of working if there is no games to play. Also prevents a
                                 // theoretical bug of sending nothing on game start if there is no games.
   for (let room in rooms) {
     if (!rooms[room].gameRunning && !rooms[room].allReady && rooms[room].delay > 0) {
@@ -145,7 +145,7 @@ function gameClock() {
       io.in(room).emit('delay',rooms[room].delay--);
     }
     else if (rooms[room].delay == 0 && !rooms[room].gameRunning && rooms[room].allReady) {
-      console.log('Game Start')
+      //console.log('Game Start');
       io.in(room).emit('startGame',rooms[room].givenLetters = givenLettersArray.pop(),rooms[room].validWords = validWordsArray.pop());
       rooms[room].time = gameLength - 1;
       rooms[room].timeDec = gameLengthDec;
@@ -158,9 +158,9 @@ function gameClock() {
       io.in(room).emit('time',rooms[room].time--);
       console.log("GAME OVER");
       for (let i = 0;i<rooms[room].users.length;i+=4) {
-        console.log(room+':'+rooms[room].users[i]+": "+rooms[room].users[i+1] + "   " +rooms[room].users[i+2].length+" words")
-        rooms[room].users[i+1] = 0
-        rooms[room].users[i+2] = []
+        console.log(room+':'+rooms[room].users[i]+": "+rooms[room].users[i+1] + "   " +rooms[room].users[i+2].length+" words");
+        rooms[room].users[i+1] = 0;
+        rooms[room].users[i+2] = [];
         rooms[room].users[i+3] = false;
       }
       rooms[room].allReady = false;
@@ -171,12 +171,12 @@ function gameClock() {
 }
 function genGames() {
   if (userCount == 0)
-    createGame.create(addtoArray) //if everyone is offline, generate games
+    createGame.create(addtoArray); //if everyone is offline, generate games
   else if (givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10))
-    createGame.quick(addtoArray) //We need more games than rooms and extras just in case
+    createGame.quick(addtoArray); //We need more games than rooms and extras just in case
 }
 function addtoArray(givenLetters,validWords) {
-  givenLettersArray.push(givenLetters)
-  validWordsArray.push(validWords)
-  console.log(givenLettersArray.length,validWordsArray.length)
+  givenLettersArray.push(givenLetters);
+  validWordsArray.push(validWords);
+  console.log(givenLettersArray.length,validWordsArray.length);
 }
