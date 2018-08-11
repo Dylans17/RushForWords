@@ -1,4 +1,4 @@
-function createGame(callBack) {
+function createGame(callBack,failed) {
   let validWords = [];
   let givenLetters = "";
   while (validWords.length < 200 || validWords[validWords.length-1].length < 8) {
@@ -8,13 +8,14 @@ function createGame(callBack) {
   if (validWords.length >= 200 && validWords[validWords.length-1].length >= 8) {
     sort(validWords);
     givenLetters = mixLetters(givenLetters);
-    callBack(givenLetters,validWords)
+    callBack(givenLetters,validWords);
     return;
   }
   else
-  console.log("ERROR in createGame.js conditional failed")
+  console.log("ERROR in createGame.js conditional failed");
+  failed();
 }
-function quickGame(callBack) {
+function quickGame(callBack,failed) {
   let validWords = [];
   let givenLetters = "";
   while (validWords.length < 100 || validWords[validWords.length-1].length < 7) {
@@ -24,11 +25,12 @@ function quickGame(callBack) {
   if (validWords.length > 100 && validWords[validWords.length-1].length >= 7) {
     sort(validWords);
     givenLetters = mixLetters(givenLetters);
-    callBack(givenLetters,validWords)
+    callBack(givenLetters,validWords);
     return;
   }
   else
-  console.log("ERROR in createGame.js quick conditional failed")
+  console.log("ERROR in createGame.js quick conditional failed");
+  failed();
 }
 function createLetters() {
   let lettersCreated = ""
