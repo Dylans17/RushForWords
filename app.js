@@ -127,7 +127,7 @@ io.on('connection', function(socket){
     }
     console.log("All Ready :" + rooms[userRoom].allReady);
     if (rooms[userRoom].allReady && !rooms[userRoom].gameRunning) {
-      rooms[userRoom].delay = 5;
+      rooms[userRoom].delay = 6;
       console.log('GAME STARTING IN ROOM '+userRoom);
       rooms[userRoom].gameRunning = false;
     }
@@ -143,8 +143,8 @@ function gameClock() {
       rooms[room].gameRunning = false;
       rooms[room].delay = 0;
     }
-   if (rooms[room].delay > 0 && !rooms[room].gameRunning && rooms[room].allReady) {
-      io.in(room).emit('delay',rooms[room].delay--);
+   else if (rooms[room].delay > 0 && !rooms[room].gameRunning && rooms[room].allReady) {
+      io.in(room).emit('delay',--rooms[room].delay);
     }
     else if (rooms[room].delay == 0 && !rooms[room].gameRunning && rooms[room].allReady) {
       //console.log('Game Start');
@@ -166,7 +166,6 @@ function gameClock() {
         rooms[room].users[i+3] = false;
       }
       rooms[room].allReady = false;
-      rooms[room].time = gameLength;
       rooms[room].gameRunning = false;
     }
   }
@@ -174,7 +173,7 @@ function gameClock() {
 function genGames() {
   if (genReady && (userCount == 0 || givenLettersArray.length < Math.max(Object.keys(rooms).length * 3,10))) {
       genReady = false
-      createGame.quick(addtoArray); //generate games
+      createGame.quick(addtoArray,function() {genReady = true}); //generate games
   }
 }
 function addtoArray(givenLetters,validWords) {
