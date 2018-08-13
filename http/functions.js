@@ -154,7 +154,7 @@ function changescreen(screen) {
   document.getElementById("Screen1").style.display = (screen==1 ? 'block' : 'none');
   document.getElementById("Screen2").style.display = (screen==2 ? 'block' : 'none');
   document.getElementById("Screen3").style.display = (screen==3 ? 'block' : 'none');
-  if (screen == 3 && givenLetters == "") {
+  if (screen == 3) {
     populateLetters("READY")
     endGameButtons(true)
   }
@@ -164,7 +164,7 @@ function endGameButtons(enable) {
     document.getElementById("spot9").className = "letter " + (ready ? 'correct' : 'wrong');
     document.getElementById("spot9").addEventListener("click", toggleReady);
     document.getElementById("spot8").addEventListener("click", homeScreen);
-    document.getElementById("spot8").innerHTML = '<i class="fa fa-home"></i>'//"🏠"
+    document.getElementById("spot8").innerHTML = '<i class="fa fa-home"></i>'
     document.getElementById("spot9").innerHTML = "➠"
     document.getElementById("spot8").className = "letter used";
   }
