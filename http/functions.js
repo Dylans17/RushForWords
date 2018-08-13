@@ -164,8 +164,8 @@ function endGameButtons(enable) {
     document.getElementById("spot9").className = "letter " + (ready ? 'correct' : 'wrong');
     document.getElementById("spot9").addEventListener("click", toggleReady);
     document.getElementById("spot8").addEventListener("click", homeScreen);
-    document.getElementById("spot8").innerText = "🏠"
-    document.getElementById("spot9").innerText = "➠"
+    document.getElementById("spot8").innerHTML = '<i class="fa fa-home"></i>'//"🏠"
+    document.getElementById("spot9").innerHTML = "➠"
     document.getElementById("spot8").className = "letter used";
   }
   else {
