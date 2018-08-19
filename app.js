@@ -6,7 +6,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http,{pingInterval:3000});
 //Paramenters for App
-const gameLength = 15;
+const gameLength = 45;
 const gameLengthDec = 0;
 const gameLengthDecAcc = 0.1;
 //App Global Variables
