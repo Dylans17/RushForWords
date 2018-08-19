@@ -155,7 +155,7 @@ position:relative;
 <div class="homeButton" onclick="changescreen(0);"><i class="fa fa-home"></i></div>
 <h1>Single Player</h1>
 <h1 id="HighScore">High Score: 0</h1>
-<button onclick="changescreen(0);">Not Working</button><br />
+<button onclick="changescreen(3);">Play Game</button><br />
 </screen>
 <screen id="Screen2" style="display:none;">
 <div class="homeButton" onclick="changescreen(0);"><i class="fa fa-home"></i></div>
@@ -253,7 +253,10 @@ socket.on('connect',function(){
   checkId(document.getElementById('room'))
 })
 socket.on('disconnect',function(){
-  homeScreen();
+  if (multiplayer)
+    homeScreen();
+  if (!multiplayer && ready)
+    genWordsWorker();
   document.getElementById('disconnectMsg').className = "msgEnter";
   document.getElementById('multiplayerButton').style.display = "none";
   document.getElementById('roomBtn').innerHTML = '';

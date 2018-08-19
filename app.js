@@ -27,6 +27,7 @@ http.listen(8080,function(){
 io.on('connection', function(socket){
   let userRoom = '';
   let userName = '';
+  let lastWordRequest = 0;
   console.log('A user connected User Count:'+ (++userCount));
   socket.on('disconnect', function(){
     if (userRoom) {
@@ -39,6 +40,15 @@ io.on('connection', function(socket){
     }
     console.log((userName||'A user') + ' disconnected User Count:'+ --userCount);
   });
+  socket.on('requestWords',function(callBack){
+    if (givenLettersArray.length > 100 && new Date()-lastWordRequest > 45000) {
+      lastWordRequest = new Date()
+      callBack(true,givenLettersArray.pop(),validWordsArray.pop())
+    }
+    else {
+      callBack(false)
+    }
+  })
   socket.on('submitWord', function(msg){
     if (!userName || !userRoom) return;
     console.log(userRoom+":"+userName + ' - ' + msg);

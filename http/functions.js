@@ -1,40 +1,80 @@
 "use strict";
-//navigator.onLine
 let validWords = [];
 let foundWords = [];
 let wordsIfound = [];
 let givenLetters = "";
+let givenLettersReady = "";
 let activeLetter = 0;
 let activeLetters = "";
 let activeLettersIndex = '';
 let score = 0;
+let delay = 0;
+let time = 0;
+let timeDec = 0;
+const timeDecAcc = 0.1;
 let ready = false;
 let multiplayer = true;
 let room = "";
 function startGame() {
+  ready = false;
+  delay = 0;
+  time = 45;
+  timeDec = 0;
   foundWords = [];
   wordsIfound = [];
   activeLetter = 0;
   activeLetters = "";
   activeLettersIndex = "";
   score = 0;
+  if (!multiplayer) {
+    givenLetters = givenLettersReady;
+    givenLettersReady = '';
+    setTimeout(gameLoop,1000)
+  }
   document.getElementById('score').innerHTML = score;
   document.getElementById("wordsIfoundList").innerHTML = "";
   populateLetters(" ");
   endGameButtons(false);
   addClickEvents();
 }
-function detectWords() {
-    validWords = [];
-    for (let i = 0;i<wordList.length;i++) {
-        let letterList = givenLetters
-        for (let p = 0;p <= wordList[i].length;p++) {
-            if (p == wordList[i].length) validWords.push(wordList[i]);
-            let newList = letterList.replace(wordList[i].charAt(p),"");
-            if (letterList == newList)break;
-            letterList = newList
-        }
-    }
+function getWords(sentWords,letters,words) {
+  if (sentWords) {
+    validWords = words
+    givenLettersReady = letters
+    delay = 5
+    countdown()
+  }
+  else {
+    populateLetters("CREATING")
+    endGameButtons(true)
+    genWordsWorker()
+  }
+}
+function gameLoop() {
+  if (time>0) {
+    setTimeout(gameLoop,1000)
+    document.getElementById('time').innerHTML = Math.floor(--time/60) + ":" + ("0" + (time % 60)).slice(-2);
+  }
+  else
+    gameOver()
+}
+function countdown() {
+  populateLetters("12345".substr(0,delay--))
+  endGameButtons(false)
+  if (delay >= 0) {
+    setTimeout(countdown,1000);
+  }
+  else {
+    startGame();
+  }
+}
+function genWordsWorker() {
+  if (window.Worker) {
+    alert('Please wait till a future update for offline singleplayer.')
+  }
+  else {
+    alert('Your browser is out of date and cannot create a game.')
+  }
 }
 function sort(array) {
     array.sort(function(a, b) {
@@ -96,11 +136,15 @@ function submitWord(e,char) {
     populateLetters();
     return
   }
-  if (activeLetter <= e.srcElement.id.charAt(4)) {
+  else if (activeLetter <= e.srcElement.id.charAt(4)) {
     if(validWords.indexOf(activeLetters)+1 && !(foundWords.indexOf(activeLetters)+1)) {
       foundWords.push(activeLetters);
       wordsIfound.push(activeLetters);
-      socket.emit('submitWord',activeLetters)
+      if (multiplayer)
+        socket.emit('submitWord',activeLetters)
+      else {
+        time += Math.round(activeLetters.length - (timeDec+=timeDecAcc));
+      }
       score += activeLetters.length - 2 - (name == 'Cassandra')
       document.getElementById('score').innerHTML = score
     }
@@ -128,12 +172,12 @@ function gameOver() {
   populateLetters("GAMEOVER")
   if (score > highScore && multiplayer == false) {
     localStorage.setItem("High Score",score)
+    document.getElementById("HighScore").innerHTML = "High Score: " + highScore;
   }
   for (let i = 0;i<10;i++) {
     document.getElementById("letter" + i).removeEventListener("click", placeLetter);
     document.getElementById("spot" + i).removeEventListener("click", submitWord);
   }
-  ready = false;
   endGameButtons(true)
   sort(wordsIfound);
   for (let i = 0;i<wordsIfound.length;i++) {
@@ -143,7 +187,14 @@ function gameOver() {
 function toggleReady() {
   ready = !ready
   document.getElementById("spot" + 9).className = "letter " + (ready ? 'correct' : 'wrong');
-  socket.emit('sendReady',ready)
+  if (multiplayer)
+    socket.emit('sendReady',ready)
+  else {
+    if (ready && socket.connected)
+      socket.emit('requestWords',getWords)
+    else if (ready && !socket.connected)
+      genWordsWorker()
+  }
 }
 function noPing() {
   document.getElementById('connection').style.color = "Red";
@@ -177,8 +228,10 @@ function endGameButtons(enable) {
 }
 function homeScreen() {
   gameOver()
-  socket.emit('sendReady',true)
-  socket.emit('leaveRooms')
+  if (multiplayer) {
+    socket.emit('sendReady',true)
+    socket.emit('leaveRooms')
+  }
   changescreen(0)
 }
 function checkId(src) {
