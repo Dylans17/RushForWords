@@ -6,6 +6,6 @@ This application primarily uses socket.io
 This is an old project that I made for fun back in high school.
 
 Unimplemented Features:
-- Player Functionality
-- Stop sending client all valid words and have a worker node detect if the current letters is a valid word.
+- Single-Player Functionality
+- Client-side validation of input words. (Currently using a reduced list from the server)
 - Server Side Validation
